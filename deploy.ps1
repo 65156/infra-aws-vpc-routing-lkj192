@@ -8,15 +8,17 @@ foreach($a in $accounts){
     $account = $a.Account
     $connections = $a.connections
     
-    #Switch to applicable Account
-    
+    #Switch to applicable Account    
+    Write-Host "  ----------------"
     Write-Host "Processing $account" -f white -b magenta 
+    Write-Host "  ----------------"
     Switch-RoleAlias $account admin 
     Write-Host ""
     $routeTables = (Get-EC2RouteTable -region $region)
     
-    $rollbackstatus = $false
+    $rollbackstatus = $true
     if($rollbackstatus -eq $true){
+        # Resets routes to previous configuration based on the rollbackdata.csv
         $lines = Import-CSV $rollbackfile
         Write-Host "Rolling back changes." -f yellow
         foreach($l in $lines){
@@ -28,12 +30,26 @@ foreach($a in $accounts){
         if($acc -eq $account){
             #do stuff
             #configure command to reconfigure route to original here.
-            Write-Host "$acc, $rt, $r, $c" -f magenta
+            Write-Host "Rolling back $r" -f magenta
+            try {
+                    #Write-Host "Updating Route for $route" -f green ; 
+                    if ($c -like 'vgw*'){
+                        Write-Host "Matched $c "}
+                        #Set-EC2Route -DestinationCidrBlock $r -RouteTableId $rt -GatewayId $c -Region $Region ; continue}
+                    if ($c -like "pcx*"){
+                        Write-Host "Matched $c"}
+                        #Set-EC2Route -DestinationCidrBlock $r -RouteTableId $rt -VpcPeeringConnectionId $c -Region $Region }
+                    
+                } catch { 
+                    Write-Host "Route set failure for $route" -f red 
+                    } 
+            }
             }
         }
-    continue
+    Write-Host ""
     }
 
+    if($rollbackstatus -eq $true){exit}    # terminate script early if rolling back otherwise exports file will be overwritten with null values.
     foreach($rT in $routeTables){
         $routes = $rT.Routes
         $routeTable = $rT.RouteTableID
@@ -71,16 +87,10 @@ foreach($a in $accounts){
             # Clear loop variables
             $cidr = $null ; $gatewayID = $null ; $peeringconnection = $null
             } 
-            Write-Host ""
+        Write-Host ""
         }
-
-    }
-    # terminate script early if rolling back otherwise exports file will be overwritten with null values.
-    if($rollbackstatus -eq $true){exit} 
-
     $rollback | Export-CSV $rollbackfile -force
     #Create Rollback CSV file from Hash Table
     Write-Host "Exporting Rollback Data to CSV" -f white -b magenta
     $rollback 
 
-    
