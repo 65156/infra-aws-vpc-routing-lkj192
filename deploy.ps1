@@ -1,14 +1,8 @@
-$region = "ap-southeast-2"
-$accounts = @( 
-    # accounts are dependant on account names configured in PS-AWS-SSO-AUTH.psm1
-    #[PSCustomObject]@{Account="PipelineProd"; connections=@("vgw-e6ccfefb","pcx-0518b26c","pcx-08423361","pcx-689e3701","pcx-a0b325c9","pcx-aa6cd9c3","pcx-d56cd9bc")},
-    #[PSCustomObject]@{Account="PipelineDev"; connections=@("vgw-a52615b8","pcx-08423361","pcx-c47ebdad","pcx-d96cd9b0")},
-    #[PSCustomObject]@{Account="LegacyProd"; connections=@("vgw-e72615fa","vgw-e62615fb","pcx-a86cd9c1","pcx-aa6cd9c3","pcx-c47ebdad","pcx-cf70bda6","pcx-d26cd9bb","pcx-d56cd9bc","pcx-689e3701","pcx-689e3701")}
-    [PSCustomObject]@{Account="LegacyDev"; connections=@("vgw-a52615b8","pcx-08423361","pcx-c47ebdad","pcx-d96cd9b0")},
-    [PSCustomObject]@{Account="SandboxD3"; connections=@("pcx-0aeae2dd703bc4755")}
-    ) 
 
-$transitgatewayID = "tgw-0f5a6a47f6a25f9f9"
+#fixed variables
+$variables = . "./variables.ps1"
+$rollbackfile = ".\files\rollbackdata.csv" 
+$rollback = @()
 
 foreach($a in $accounts){
     $account = $a.Account
@@ -32,14 +26,28 @@ foreach($a in $accounts){
             $peeringconnection = $r.VpcPeeringConnectionId  
             $route = $r.DestinationCidrBlock
             foreach($c in $connections){
-                if($c -eq $gatewayID){ $match = 1 ; break }
+                if($c -eq $gatewayID){ $match = 1 ; break }  
                 if($c -eq $peeringconnection){ $match = 1 ; break }
                 }
             # Update Route 
             if($match -eq 1){
-                try {Write-Host "Matched $route to $c" ; #Write-Host "Updating Route for $route" -f green ; #Set-EC2Route -DestinationCidrBlock $cidr -RouteTableId $routeTable -TransitGatewayId $transitgatewayID -Region $Region 
-                    } catch {} }
-            if($match -eq 0){Write-Host "No Match in $route" -f yellow }
+                try {
+                    Write-Host "Matched $route to $c" -f yellow ; 
+                    #generate rollback array here
+                    $obj = [PSCustomObject]@{
+                        Account = "$account"
+                        RouteTable = "$routeTable"
+                        Route = "$route"
+                        Connection = "$c"
+                        }
+                    $rollback += $obj
+                    #Write-Host "Updating Route for $route" -f green ; 
+                    #Set-EC2Route -DestinationCidrBlock $cidr -RouteTableId $routeTable -TransitGatewayId $transitgatewayID -Region $Region 
+                    } catch { 
+                        #Write-Host "Route set failure for $route" -f red 
+                        } 
+                }
+            if($match -eq 0){Write-Host "No Match in $route"}
             # Clear loop variables
             $cidr = $null ; $gatewayID = $null ; $peeringconnection = $null
             } 
@@ -47,3 +55,10 @@ foreach($a in $accounts){
         }
         Write-Host ""
     }
+
+    #Create Rollback CSV file from Hash Table
+    Write-Host "Rollback Data" -f white -b magenta
+    $rollback 
+    Write-Host "Exporting to CSV." -f yellow
+    $rollback | Export-CSV $rollbackfile -force
+    
