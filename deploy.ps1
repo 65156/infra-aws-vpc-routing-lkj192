@@ -30,14 +30,14 @@ foreach($a in $accounts){
         if($acc -eq $account){
             #do stuff
             #configure command to reconfigure route to original here.
-            Write-Host "Rolling back $r" -f magenta
+            Write-Host "SetEC2-Route: " -nonewline ; Write-Host $Rt -nonewline -f white -b magenta ; Write-Host " $r" -NoNewLine -f magenta
             try {
                     #Write-Host "Updating Route for $route" -f green ; 
                     if ($c -like 'vgw*'){
-                        Write-Host "Matched $c "}
+                        Write-Host " $c " }
                         #Set-EC2Route -DestinationCidrBlock $r -RouteTableId $rt -GatewayId $c -Region $Region ; continue}
                     if ($c -like "pcx*"){
-                        Write-Host "Matched $c"}
+                        Write-Host " $c " }
                         #Set-EC2Route -DestinationCidrBlock $r -RouteTableId $rt -VpcPeeringConnectionId $c -Region $Region }
                     
                 } catch { 
