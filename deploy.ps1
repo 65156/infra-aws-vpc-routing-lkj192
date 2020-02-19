@@ -45,7 +45,7 @@ foreach($a in $accounts){
             }
         }
     Write-Host ""
-    if($rollbackstatus -eq $true){continue} # End loop iteration
+    if($rollbackstatus -eq $true){continue} # skip loop iteration
     
     # Loop through each route table in standard mode
     foreach($rT in $routeTables){
@@ -56,14 +56,14 @@ foreach($a in $accounts){
         foreach($r in $routes){
             $match = 0
             $cidr = $r.DestinationCidrBlock
-            if($cidr -eq $null){continue}
+            if($cidr -eq $null){continue} # skip loop iteration
             $gatewayID = $r.gatewayID
             $peeringconnection = $r.VpcPeeringConnectionId  
             $route = $r.DestinationCidrBlock
             # Check if gateway for route matches gateway id or peering connection
             foreach($c in $connections){
-                if($c -eq $gatewayID){ $match = 1 ; break }  
-                if($c -eq $peeringconnection){ $match = 1 ; break }
+                if($c -eq $gatewayID){ $match = 1 ; break }  # if match, break out of foreach loop.
+                if($c -eq $peeringconnection){ $match = 1 ; break } # if match, break out of foreach loop.
                 }
             # Update Route 
             if($match -eq 1){
