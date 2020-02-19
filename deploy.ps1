@@ -2,7 +2,7 @@
 ## Fixed Variables ##
 $variables = . ".\variables.ps1" # List of variables used for script
 $rollbackfile = ".\files\rollbackdata.csv" # Rollback file generated from hash table
-$rollback = @() # Rollback hash table
+$rollbackhash = @() # Rollback hash table
 
 foreach($a in $accounts){
     $account = $a.Account
@@ -16,7 +16,7 @@ foreach($a in $accounts){
     Write-Host ""
     $routeTables = (Get-EC2RouteTable -region $region)
     
-    if($rollbackstatus -eq $true){
+    if($rollback -eq $true){
         # Resets routes to previous configuration based on the rollbackdata.csv
         $lines = Import-CSV $rollbackfile
         Write-Host "Rolling back changes." -f yellow
@@ -45,7 +45,7 @@ foreach($a in $accounts){
             }
         }
     Write-Host ""
-    if($rollbackstatus -eq $true){continue} # skip loop iteration
+    if($rollback -eq $true){continue} # skip loop iteration
     
     # Loop through each route table in standard mode
     foreach($rT in $routeTables){
@@ -76,7 +76,7 @@ foreach($a in $accounts){
                         Route = "$route"
                         Connection = "$c"
                         }
-                    $rollback += $obj # Add custom object to rollback array
+                    $rollbackhash += $obj # Add custom object to rollback array
                     Write-Host " :: " -nonewline ; Write-Host "updating $transitgatewayid " -f cyan ; 
                     Set-EC2Route -DestinationCidrBlock $cidr -RouteTableId $routeTable -TransitGatewayId $transitgatewayID -Region $Region 
                     } catch { 
@@ -92,14 +92,14 @@ foreach($a in $accounts){
     }
 
     # Terminate script if rolling back
-    if($rollbackstatus -eq $true){
+    if($rollback -eq $true){
         Write-Host " --------------- "
         Write-Host "Rollback Complete" -f white -b magenta
         Write-Host " --------------- "        
         exit}    
 
     # Create rollback CSV file from $rollback hash table
-    $rollback | Export-CSV $rollbackfile -force
+    $rollbackhash | Export-CSV $rollbackfile -force
     Write-Host "Exporting Rollback Data to CSV" -f white -b magenta
-    $rollback 
+    $rollbackhash 
 
