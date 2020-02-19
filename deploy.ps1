@@ -1,14 +1,14 @@
 
-#fixed variables
-$variables = . "./variables.ps1"
-$rollbackfile = ".\files\rollbackdata.csv" 
-$rollback = @()
+## Fixed Variables ##
+$variables = . ".\variables.ps1" # List of variables used for script
+$rollbackfile = ".\files\rollbackdata.csv" # Rollback file generated from hash table
+$rollback = @() # Rollback hash table
 
 foreach($a in $accounts){
     $account = $a.Account
     $connections = $a.connections
     
-    #Switch to applicable Account    
+    # Switch to applicable account    
     Write-Host "  ----------------"
     Write-Host "Processing $account" -f white -b magenta 
     Write-Host "  ----------------"
@@ -16,7 +16,6 @@ foreach($a in $accounts){
     Write-Host ""
     $routeTables = (Get-EC2RouteTable -region $region)
     
-    $rollbackstatus = $true
     if($rollbackstatus -eq $true){
         # Resets routes to previous configuration based on the rollbackdata.csv
         $lines = Import-CSV $rollbackfile
@@ -24,22 +23,21 @@ foreach($a in $accounts){
         foreach($l in $lines){
 
         $acc = $l.Account
-        $Rt = $l.RouteTable
+        $rt = $l.RouteTable
         $r = $l.route
         $c = $l.connection
         if($acc -eq $account){
             #do stuff
             #configure command to reconfigure route to original here.
-            Write-Host "SetEC2-Route: " -nonewline ; Write-Host $Rt -nonewline -f white -b magenta ; Write-Host " $r" -NoNewLine -f magenta
+            Write-Host "SetEC2-Route: " -nonewline ; Write-Host $rt -nonewline -f white -b magenta ; Write-Host " $r" -NoNewLine -f magenta
             try {
                     #Write-Host "Updating Route for $route" -f green ; 
                     if ($c -like 'vgw*'){
-                        Write-Host " $c " }
-                        #Set-EC2Route -DestinationCidrBlock $r -RouteTableId $rt -GatewayId $c -Region $Region ; continue}
+                        Write-Host " $c " 
+                        Set-EC2Route -DestinationCidrBlock $r -RouteTableId $rt -GatewayId $c -Region $Region ; continue}
                     if ($c -like "pcx*"){
-                        Write-Host " $c " }
-                        #Set-EC2Route -DestinationCidrBlock $r -RouteTableId $rt -VpcPeeringConnectionId $c -Region $Region }
-                    
+                        Write-Host " $c " 
+                        Set-EC2Route -DestinationCidrBlock $r -RouteTableId $rt -VpcPeeringConnectionId $c -Region $region }                   
                 } catch { 
                     Write-Host "Route set failure for $route" -f red 
                     } 
@@ -47,13 +45,14 @@ foreach($a in $accounts){
             }
         }
     Write-Host ""
-    }
-
-    if($rollbackstatus -eq $true){exit}    # terminate script early if rolling back otherwise exports file will be overwritten with null values.
+    if($rollbackstatus -eq $true){continue} # End loop iteration
+    
+    # Loop through each route table in standard mode
     foreach($rT in $routeTables){
         $routes = $rT.Routes
         $routeTable = $rT.RouteTableID
-        Write-Host "Route Table:" -f black -b cyan -nonewline ; Write-Host "$routeTable" -f black -b white
+        Write-Host "Route Table:" -f black -b cyan -nonewline ; Write-Host " $routeTable" -f black -b white
+        # Loop through each route entry
         foreach($r in $routes){
             $match = 0
             $cidr = $r.DestinationCidrBlock
@@ -61,6 +60,7 @@ foreach($a in $accounts){
             $gatewayID = $r.gatewayID
             $peeringconnection = $r.VpcPeeringConnectionId  
             $route = $r.DestinationCidrBlock
+            # Check if gateway for route matches gateway id or peering connection
             foreach($c in $connections){
                 if($c -eq $gatewayID){ $match = 1 ; break }  
                 if($c -eq $peeringconnection){ $match = 1 ; break }
@@ -68,17 +68,17 @@ foreach($a in $accounts){
             # Update Route 
             if($match -eq 1){
                 try {
-                    Write-Host "Matched $route to $c" -f yellow ; 
-                    #generate rollback array here
+                    Write-Host "Matched $route" -f green -nonewline ;
+                    # Generate rollback pscustom object 
                     $obj = [PSCustomObject]@{
                         Account = "$account"
                         RouteTable = "$routeTable"
                         Route = "$route"
                         Connection = "$c"
                         }
-                    $rollback += $obj
-                    #Write-Host "Updating Route for $route" -f green ; 
-                    #Set-EC2Route -DestinationCidrBlock $cidr -RouteTableId $routeTable -TransitGatewayId $transitgatewayID -Region $Region 
+                    $rollback += $obj # Add custom object to rollback array
+                    Write-Host " :: " -nonewline ; Write-Host "updating $transitgatewayid " -f cyan ; 
+                    Set-EC2Route -DestinationCidrBlock $cidr -RouteTableId $routeTable -TransitGatewayId $transitgatewayID -Region $Region 
                     } catch { 
                         Write-Host "Route set failure for $route" -f red 
                         } 
@@ -89,8 +89,17 @@ foreach($a in $accounts){
             } 
         Write-Host ""
         }
+    }
+
+    # Terminate script if rolling back
+    if($rollbackstatus -eq $true){
+        Write-Host " --------------- "
+        Write-Host "Rollback Complete" -f white -b magenta
+        Write-Host " --------------- "        
+        exit}    
+
+    # Create rollback CSV file from $rollback hash table
     $rollback | Export-CSV $rollbackfile -force
-    #Create Rollback CSV file from Hash Table
     Write-Host "Exporting Rollback Data to CSV" -f white -b magenta
     $rollback 
 
