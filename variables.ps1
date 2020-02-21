@@ -1,6 +1,6 @@
 $region = "ap-southeast-2"
 $transitgatewayID = "tgw-0f5a6a47f6a25f9f9"
-$rollbackstatus = $false
+$rollback = $true
 $accounts = @( 
     # accounts are dependant on account names configured in PS-AWS-SSO-AUTH.psm1
     #[PSCustomObject]@{Account="PipelineProd"; connections=@("vgw-e6ccfefb","pcx-0518b26c","pcx-08423361","pcx-689e3701","pcx-a0b325c9","pcx-aa6cd9c3","pcx-d56cd9bc")},
