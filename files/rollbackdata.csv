@@ -1,3 +1,3 @@
 "Account","RouteTable","Route","Connection"
 "SandboxD3","rtb-0e1304384a515f9fa","10.0.0.0/8","vgw-0e4394ce3ccba01db"
-"SandboxICE","rtb-007f48ae188f0d8ce","10.8.0.0/16","vgw-08034855bd72145f1"
+"SandboxICE","rtb-007f48ae188f0d8ce","10.0.0.0/8","vgw-08034855bd72145f1"
