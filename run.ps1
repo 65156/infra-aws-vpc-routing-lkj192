@@ -33,12 +33,16 @@ foreach($a in $accounts){
                     #Write-Host "Updating Route for $route" -f green ; 
                     if ($c -like 'vgw*'){
                         Write-Host " $c " 
-                        #Set-EC2Route -DestinationCidrBlock $r -RouteTableId $rt -GatewayId $c -Region $Region ; continue
-                        }
+                        if($deploy -eq $true){
+                            Set-EC2Route -DestinationCidrBlock $r -RouteTableId $rt -VpcPeeringConnectionId $c -Region $region                        } 
+                        if($deploy -ne $true){Write-Host "dry run for $c " -f cyan ; }                       
+                    }      
                     if ($c -like "pcx*"){
                         Write-Host " $c " 
-                        #Set-EC2Route -DestinationCidrBlock $r -RouteTableId $rt -VpcPeeringConnectionId $c -Region $region
-                        }                   
+                        if($deploy -eq $true){
+                            Set-EC2Route -DestinationCidrBlock $r -RouteTableId $rt -VpcPeeringConnectionId $c -Region $region                        } 
+                        if($deploy -ne $true){Write-Host "dry run for $c " -f cyan ; }                       
+                    }                   
                 } catch { 
                     Write-Host "Route set failure for $route" -f red 
                     } 
@@ -78,8 +82,11 @@ foreach($a in $accounts){
                         Connection = "$c"
                         }
                     $rollbackhash += $obj # Add custom object to rollback array
-                    Write-Host " :: " -nonewline ; Write-Host "updating $transitgatewayid " -f cyan ; 
-                    #Set-EC2Route -DestinationCidrBlock $cidr -RouteTableId $routeTable -TransitGatewayId $transitgatewayID -Region $Region 
+                        Write-Host " :: " -nonewline ; 
+                    if($deploy -eq $true){
+                        Write-Host "updating $transitgatewayid " -f cyan ; 
+                        Set-EC2Route -DestinationCidrBlock $cidr -RouteTableId $routeTable -TransitGatewayId $transitgatewayID -Region $Region} 
+                    if($deploy -ne $true){Write-Host "dry run for $transitgatewayid " -f cyan ; }
                     } catch { 
                         Write-Host "Route set failure for $route" -f red 
                         } 
