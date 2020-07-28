@@ -13,10 +13,10 @@ Updates a matched route in a AWS route table, searches recursively through all r
 3) Update "$destinationID" with appropriate ID to replace a matched connection i.e: "tgw-067fc30b039641df1"
 
 ## Test:
-Update $deploy variable in Vairables.ps1 to value: "$false" 
+Update $deploy variable to "$false" 
 
 ## Deploy:
-Update $deploy variable in Variables.ps1 to value: "$true"
+Update $deploy variable to "$true"
 
 ## Rollback:
-Update $rollback variable in Variables.ps1 to value "$true"
+Update $rollback variable to "$true"
