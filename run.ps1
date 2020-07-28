@@ -19,7 +19,8 @@ foreach($a in $accounts){
     if($rollback -eq $true){
         # Resets routes to previous configuration based on the rollbackdata.csv
         $lines = Import-CSV $rollbackfile
-        Write-Host "Rolling back changes." -f yellow
+        if($deploy -eq $true){Write-Host "Rolling back changes." -f yellow}
+        if($deploy -ne $true){Write-Host "Routes set to be rolled back." -f yellow}
         foreach($l in $lines){
 
         $acc = $l.Account
@@ -28,22 +29,20 @@ foreach($a in $accounts){
         $c = $l.connection
         if($acc -eq $account){
             #configure command to reconfigure route to original here.
-            Write-Host "SetEC2-Route: " -nonewline ; Write-Host $rt -nonewline -f white -b magenta ; Write-Host " $r" -NoNewLine -f magenta
+            Write-Host $rt -nonewline -f white -b magenta ; Write-Host " $r" -NoNewLine -f magenta
             try {
                     #Write-Host "Updating Route for $route" -f green ; 
                     if ($c -like 'vgw*'){
                         Write-Host " $c " 
                         if($deploy -eq $true){
-                            #Set-EC2Route -DestinationCidrBlock $r -RouteTableId $rt -VpcPeeringConnectionId $c -Region $region
+                            Set-EC2Route -DestinationCidrBlock $r -RouteTableId $rt -VpcPeeringConnectionId $c -Region $region
                         } 
-                        if($deploy -ne $true){Write-Host "dry run for $c " -f cyan ; }                       
                     }      
                     if ($c -like "pcx*"){
                         Write-Host " $c " 
                         if($deploy -eq $true){
-                            #Set-EC2Route -DestinationCidrBlock $r -RouteTableId $rt -VpcPeeringConnectionId $c -Region $region
+                            Set-EC2Route -DestinationCidrBlock $r -RouteTableId $rt -VpcPeeringConnectionId $c -Region $region
                         } 
-                        if($deploy -ne $true){Write-Host "dry run for $c " -f cyan ; }                       
                     }                   
                 } catch { 
                     Write-Host "Route set failure for $route" -f red 
@@ -87,7 +86,7 @@ foreach($a in $accounts){
                         Write-Host " :: " -nonewline ; 
                     if($deploy -eq $true){
                         Write-Host "updating to: $destinationID " -f cyan ; 
-                        #Set-EC2Route -DestinationCidrBlock $cidr -RouteTableId $routeTable -TransitGatewayId $destinationID -Region $Region
+                        Set-EC2Route -DestinationCidrBlock $cidr -RouteTableId $routeTable -TransitGatewayId $destinationID -Region $Region
                     } 
                     if($deploy -ne $true){Write-Host "will update to: $destinationID on deploy " -f magenta ; }
                     } catch { 
