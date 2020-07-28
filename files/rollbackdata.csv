@@ -1,0 +1,7 @@
+"Account","RouteTable","Route","Connection"
+"PipelineProd","rtb-20db2144","10.0.1.0/25","vgw-e6ccfefb"
+"PipelineProd","rtb-26db2142","10.0.1.0/25","vgw-e6ccfefb"
+"PipelineProd","rtb-25db2141","10.0.1.0/25","vgw-e6ccfefb"
+"PipelineProd","rtb-23db2147","10.0.1.0/25","vgw-e6ccfefb"
+"PipelineProd","rtb-2cdb2148","10.0.1.0/25","vgw-e6ccfefb"
+"PipelineProd","rtb-59db213d","10.0.1.0/25","vgw-e6ccfefb"

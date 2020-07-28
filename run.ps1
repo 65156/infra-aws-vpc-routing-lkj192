@@ -1,8 +1,7 @@
 
 ## Fixed Variables ##
 $variables = . ".\variables.ps1" # List of variables used for script
-$date = Get-Date -Format dd-MM-yy_hh-mm-ss
-$rollbackfile = ".\files\rollbackdata_$date.csv" # Rollback file generated from hash table
+$rollbackfile = ".\files\rollbackdata.csv" # Rollback file generated from hash table
 $rollbackhash = @() # Rollback hash table
 
 foreach($a in $accounts){
