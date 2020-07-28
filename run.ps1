@@ -86,10 +86,10 @@ foreach($a in $accounts){
                     $rollbackhash += $obj # Add custom object to rollback array
                         Write-Host " :: " -nonewline ; 
                     if($deploy -eq $true){
-                        Write-Host "updating to: $transitgatewayid " -f cyan ; 
-                        #Set-EC2Route -DestinationCidrBlock $cidr -RouteTableId $routeTable -TransitGatewayId $transitgatewayID -Region $Region
+                        Write-Host "updating to: $destinationID " -f cyan ; 
+                        #Set-EC2Route -DestinationCidrBlock $cidr -RouteTableId $routeTable -TransitGatewayId $destinationID -Region $Region
                     } 
-                    if($deploy -ne $true){Write-Host "will update to: $transitgatewayid on deploy " -f magenta ; }
+                    if($deploy -ne $true){Write-Host "will update to: $destinationID on deploy " -f magenta ; }
                     } catch { 
                         Write-Host "Route set failure for $route" -f red 
                         } 

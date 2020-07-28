@@ -1,5 +1,5 @@
 $region = "ap-southeast-2"
-$transitgatewayID = "tgw-067fc30b039641df1"
+$destinationID = "tgw-067fc30b039641df1"
 $rollback = $false
 $deploy = $false
 $accounts = @( 
@@ -8,6 +8,6 @@ $accounts = @(
     [PSCustomObject]@{Account="PipelineDev"; connections=@("pcx-08423361","pcx-c47ebdad","pcx-d96cd9b0")},
     [PSCustomObject]@{Account="LegacyProd"; connections=@("pcx-a86cd9c1","pcx-aa6cd9c3","pcx-c47ebdad","pcx-cf70bda6","pcx-d26cd9bb","pcx-d56cd9bc","pcx-689e3701","pcx-689e3701")}
     [PSCustomObject]@{Account="LegacyDev"; connections=@("pcx-08423361","pcx-c47ebdad","pcx-d96cd9b0")},
-    [PSCustomObject]@{Account="SandboxD3"; connections=@("vgw-0e4394ce3ccba01db")},
-    [PSCustomObject]@{Account="SandboxICE"; connections=@("vgw-08034855bd72145f1")}
+    [PSCustomObject]@{Account="SandboxD3"; connections=@("")},
+    [PSCustomObject]@{Account="SandboxICE"; connections=@("")}
     ) 
