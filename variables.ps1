@@ -1,5 +1,5 @@
 $region = "ap-southeast-2"
-$destinationID = "tgw-067fc30b039641df1"
+$destinationID = "tgw-673473284646748324"
 $rollback = $false
 $deploy = $false
 $accounts = @( 
